@@ -1,6 +1,3 @@
-Below is a suggested **README.md** for your partial Todo app. Feel free to tweak any sections to match your preferred workflow, add screenshots or links to a live demo once you have one, and update the roadmap as you build out the missing JS functionality.
-
-```markdown
 # Todo App
 
 A minimalist, theme-toggleable Todo application built with plain HTML, CSS and JavaScript.  
