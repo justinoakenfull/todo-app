@@ -1,7 +1,7 @@
 # Todo App
 
 A minimalist, theme-toggleable Todo application built with plain HTML, CSS and JavaScript.  
-This project is a work in progress: the UI is styled and the dark-mode toggle is wired, but core JS behavior (adding items, marking complete, filtering and drag-and-drop) has yet to be implemented.
+This project is a work in progress: the UI is mostly styled, but core JS behavior (adding items, marking complete, filtering and drag-and-drop) has yet to be implemented.
 
 ---
 
