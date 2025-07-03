@@ -13,9 +13,7 @@ This project is a work in progress: the UI is styled and the dark-mode toggle is
 4. [Getting Started](#getting-started)  
 5. [Usage](#usage)  
 6. [Project Structure](#project-structure)  
-7. [Roadmap](#roadmap)  
-8. [Contributing](#contributing)  
-9. [License](#license)  
+7. [Roadmap](#roadmap)
 
 ---
 
@@ -54,8 +52,8 @@ This project is a work in progress: the UI is styled and the dark-mode toggle is
 
 1. **Clone the repo**  
    ```bash
-   git clone https://github.com/your-username/todo-app.git
-   cd todo-app
+   git clone https://github.com/justinoakenfull/todo-app.git
+   cd todo-app-main
    ```
 
 2. **Open in browser**  
