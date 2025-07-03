@@ -1,0 +1,149 @@
+.josefin-sans-todo-400 {
+    font-family: "Josefin Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.josefin-sans-todo-700 {
+    font-family: "Josefin Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+}
+
+* {
+    font-family: "Josefin Sans", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 60%;
+}
+
+.title {
+    letter-spacing: 0.5rem;
+    text-transform: uppercase;
+    font-size: 44px;
+    font-weight: bold;
+    font-family: "Josefin Sans", sans-serif;
+    font-weight: 700;
+    color: #fff;
+}
+
+.header-background {
+    background-image: url("./images/bg-desktop-dark.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 300px;
+    background-color: #161722;
+    padding: 20px;
+    text-align: center;
+}
+
+.center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.input-row {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    background-color: #25273C;
+    padding: 1.5rem;
+    border-radius: 5px;
+    width: 60%;
+}
+
+.checked-icon {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(335deg, hsl(192, 100%, 67%), hsl(280, 87%, 65%));
+    border: hsl(234, 39%, 85%) 1px solid;
+    border-radius: 50%;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checked-icon:hover {
+    border: hsl(236, 33%, 92%) 1px solid;
+}
+
+.check-icon {
+    background-image: url("./images/icon-check.svg");
+    background-size: 16px 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.unchecked-icon {
+    width: 20px;
+    height: 20px;
+    border: hsl(234, 39%, 85%) 1px solid;
+    border-radius: 50%;
+    padding: 0.5rem;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.unchecked-icon:hover {
+    border: hsl(236, 33%, 92%) 1px solid;
+}
+
+.todo-input {
+    flex: 1 1 0;
+    margin-left: 1rem;
+    padding: 0.5rem;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: transparent;
+    color: #fff;
+
+}
+
+.todo-list {
+    display: flex;
+    padding: 1.5rem;
+}
+
+.todo-row {
+    flex-direction: row;
+    display: flex;
+    align-items: stretch;
+    margin-top: 20px;
+    background-color: #25273C;
+    padding: 1.5rem;
+    border-radius: 5px;
+}
+
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.attribution {
+    font-size: 11px;
+    text-align: center;
+}
+
+.attribution a {
+    color: hsl(228, 45%, 44%);
+}
