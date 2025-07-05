@@ -93,12 +93,12 @@ This project is a work in progress: the UI is mostly styled, but core JS behavio
 
 ## Roadmap
 
-- [ ] Add JS logic to **create** new todo items  
-- [ ] Persist todos in **localStorage**  
-- [ ] Implement **complete / uncomplete** toggle  
-- [ ] Build **filter** buttons (All / Active / Completed)  
-- [ ] Wire up **clear completed** action  
-- [ ] Add **drag-and-drop** reordering  
-- [ ] Animate item transitions and theme changes  
+- [x] Add JS logic to **create** new todo items  
+- [x] Persist todos in **localStorage**  
+- [x] Implement **complete / uncomplete** toggle  
+- [x] Build **filter** buttons (All / Active / Completed)  
+- [x] Wire up **clear completed** action  
+- [x] Add **drag-and-drop** reordering (minus touch)  
+- [x] Animate item transitions and theme changes  
 
 ---
