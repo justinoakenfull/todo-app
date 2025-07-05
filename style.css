@@ -102,6 +102,7 @@ body.light-theme {
 .input-row {
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: var(--very-dark-desaturated-blue);
     padding: 20px 24px;
     border-radius: 5px;
@@ -122,10 +123,12 @@ body.light-theme {
     border-radius: 5px;
     font-size: 18px;
     font-family: "Josefin Sans", sans-serif;
+    line-height: 1.4;
     border: none;
     background: transparent;
     color: var(--light-grayish-blue-dark);
     outline: none;
+    vertical-align: middle;
 }
 
 .todo-input::placeholder {
