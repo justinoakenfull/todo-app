@@ -1,189 +1,165 @@
-class TodoDragDrop {
+// Simple and reliable drag and drop implementation
+class SimpleDragDrop {
     constructor() {
         this.draggedElement = null;
         this.draggedIndex = null;
         this.placeholder = null;
         this.isDragging = false;
-        this.touchStartY = 0;
-        this.touchCurrentY = 0;
-        this.scrollContainer = null;
 
         this.init();
     }
 
     init() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupDragAndDrop());
-        } else {
-            this.setupDragAndDrop();
+        this.createStyles();
+
+        // Override the global renderTodos function to add drag handlers
+        const originalRenderTodos = window.renderTodos;
+        if (originalRenderTodos) {
+            window.renderTodos = () => {
+                originalRenderTodos();
+                setTimeout(() => this.attachDragHandlers(), 10);
+            };
+        }
+
+        // If renderTodos already exists, attach handlers now
+        if (window.renderTodos) {
+            setTimeout(() => this.attachDragHandlers(), 100);
         }
     }
 
-    setupDragAndDrop() {
-        this.scrollContainer = document.querySelector('.todo-list') || document.body;
-        this.createPlaceholder();
-        this.attachEventListeners();
-    }
-
-    createPlaceholder() {
-        this.placeholder = document.createElement('div');
-        this.placeholder.className = 'todo-placeholder';
-        this.placeholder.innerHTML = '<div class="placeholder-content">Drop here</div>';
+    createStyles() {
+        if (document.getElementById('drag-drop-styles')) return;
 
         const style = document.createElement('style');
+        style.id = 'drag-drop-styles';
         style.textContent = `
-      .todo-placeholder {
-        background-color: var(--very-dark-desaturated-blue);
-        border: 2px dashed var(--dark-grayish-blue-dark);
-        border-radius: 5px;
-        padding: 20px 24px;
-        margin: 2px 0;
-        transition: all 0.2s ease;
-        opacity: 0.7;
-      }
-      
-      .light-theme .todo-placeholder {
-        background-color: var(--very-light-grayish-blue);
-        border-color: var(--light-grayish-blue);
-      }
-      
-      .placeholder-content {
-        text-align: center;
-        color: var(--dark-grayish-blue-dark);
-        font-size: 14px;
-        font-style: italic;
-      }
-      
-      .light-theme .placeholder-content {
-        color: var(--dark-grayish-blue);
-      }
-      
-      .todo-item.dragging {
-        opacity: 0.5;
-        transform: rotate(5deg);
-        z-index: 1000;
-        pointer-events: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      }
-      
-      .todo-item.drag-over {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      }
-      
-      .todo-item {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        cursor: grab;
-      }
-      
-      .todo-item:active {
-        cursor: grabbing;
-      }
-      
-      .todo-item.dragging {
-        cursor: grabbing;
-      }
-      
-      .drag-handle {
-        cursor: grab;
-        padding: 4px;
-        margin-right: 8px;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-      
-      .todo-item:hover .drag-handle {
-        opacity: 0.6;
-      }
-      
-      .drag-handle:hover {
-        opacity: 1 !important;
-      }
-      
-      .drag-handle::before {
-        content: "⋮⋮";
-        color: var(--dark-grayish-blue-dark);
-        font-size: 16px;
-        line-height: 1;
-        letter-spacing: -2px;
-      }
-      
-      .light-theme .drag-handle::before {
-        color: var(--dark-grayish-blue);
-      }
-    `;
+            .todo-item {
+                cursor: grab;
+                transition: all 0.2s ease;
+            }
+            
+            .todo-item:active {
+                cursor: grabbing;
+            }
+            
+            .todo-item.dragging {
+                opacity: 0.5;
+                transform: rotate(2deg);
+                cursor: grabbing;
+                z-index: 1000;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+            
+            .todo-item.drag-over {
+                border-top: 3px solid var(--bright-blue);
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .light-theme .todo-item.drag-over {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+            
+            .drag-placeholder {
+                height: 4px;
+                background: var(--bright-blue);
+                border-radius: 2px;
+                margin: 4px 24px;
+                opacity: 0.8;
+                animation: pulse 1s infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 0.8; }
+                50% { opacity: 0.4; }
+            }
+        `;
         document.head.appendChild(style);
-    }
-
-    attachEventListeners() {
-        document.addEventListener('todosUpdated', () => {
-            this.attachDragHandlers();
-        });
-
-        this.attachDragHandlers();
     }
 
     attachDragHandlers() {
         const todoItems = document.querySelectorAll('.todo-item');
 
         todoItems.forEach((item, index) => {
-            this.removeDragHandlers(item);
+            // Remove any existing drag attributes to start fresh
+            item.draggable = false;
 
-            this.addDragHandle(item);
+            // Clone the item to remove all existing event listeners
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
 
-            item.draggable = true;
-            item.dataset.index = index;
+            // Set up the new item
+            newItem.draggable = true;
+            newItem.dataset.originalIndex = index;
 
-            item.addEventListener('dragstart', this.handleDragStart.bind(this));
-            item.addEventListener('dragend', this.handleDragEnd.bind(this));
-            item.addEventListener('dragover', this.handleDragOver.bind(this));
-            item.addEventListener('dragenter', this.handleDragEnter.bind(this));
-            item.addEventListener('dragleave', this.handleDragLeave.bind(this));
-            item.addEventListener('drop', this.handleDrop.bind(this));
+            // Add drag event listeners
+            newItem.addEventListener('dragstart', (e) => this.handleDragStart(e, index));
+            newItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
+            newItem.addEventListener('dragover', (e) => this.handleDragOver(e));
+            newItem.addEventListener('drop', (e) => this.handleDrop(e, index));
+            newItem.addEventListener('dragenter', (e) => this.handleDragEnter(e));
+            newItem.addEventListener('dragleave', (e) => this.handleDragLeave(e));
 
-            item.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-            item.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-            item.addEventListener('touchend', this.handleTouchEnd.bind(this));
+            // Re-attach click handlers for buttons (since we cloned the element)
+            this.reattachButtonHandlers(newItem);
         });
+
+        console.log(`Attached drag handlers to ${todoItems.length} items`);
     }
 
-    addDragHandle(item) {
-        if (item.querySelector('.drag-handle')) return;
+    reattachButtonHandlers(item) {
+        const todoId = parseInt(item.dataset.id);
 
-        const dragHandle = document.createElement('div');
-        dragHandle.className = 'drag-handle';
-        dragHandle.setAttribute('aria-label', 'Drag to reorder');
+        // Toggle button
+        const toggleBtn = item.querySelector('.unchecked-icon, .checked-icon');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                window.toggleTodo(todoId);
+            });
+        }
 
-        const checkbox = item.querySelector('.unchecked-icon, .checked-icon');
-        if (checkbox) {
-            checkbox.insertAdjacentElement('afterend', dragHandle);
-        } else {
-            item.insertBefore(dragHandle, item.firstChild);
+        // Delete button
+        const deleteBtn = item.querySelector('.delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                window.deleteTodo(todoId);
+            });
         }
     }
 
-    removeDragHandlers(item) {
-        const newItem = item.cloneNode(true);
-        item.parentNode.replaceChild(newItem, item);
-    }
-
-    handleDragStart(e) {
+    handleDragStart(e, index) {
         this.draggedElement = e.target.closest('.todo-item');
-        this.draggedIndex = parseInt(this.draggedElement.dataset.index);
+        this.draggedIndex = index;
         this.isDragging = true;
 
         this.draggedElement.classList.add('dragging');
 
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.draggedElement.outerHTML);
+        e.dataTransfer.setData('text/html', ''); // Required for Firefox
 
-        this.createDragImage(e);
-
-        this.dispatchDragEvent('dragStarted', { index: this.draggedIndex });
+        console.log('Drag started from index:', index);
     }
 
     handleDragEnd(e) {
-        this.cleanupDrag();
+        if (this.draggedElement) {
+            this.draggedElement.classList.remove('dragging');
+        }
+
+        // Clean up all drag states
+        document.querySelectorAll('.todo-item').forEach(item => {
+            item.classList.remove('drag-over');
+        });
+
+        this.removePlaceholder();
+
+        this.draggedElement = null;
+        this.draggedIndex = null;
+        this.isDragging = false;
+
+        console.log('Drag ended');
     }
 
     handleDragOver(e) {
@@ -192,264 +168,117 @@ class TodoDragDrop {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
 
-        const targetItem = e.target.closest('.todo-item');
-        if (targetItem && targetItem !== this.draggedElement) {
-            this.showPlaceholder(targetItem, e.clientY);
+        const item = e.target.closest('.todo-item');
+        if (item && item !== this.draggedElement) {
+            this.showPlaceholder(item, e.clientY);
         }
     }
 
     handleDragEnter(e) {
         if (!this.isDragging) return;
 
-        const targetItem = e.target.closest('.todo-item');
-        if (targetItem && targetItem !== this.draggedElement) {
-            targetItem.classList.add('drag-over');
+        const item = e.target.closest('.todo-item');
+        if (item && item !== this.draggedElement) {
+            item.classList.add('drag-over');
         }
     }
 
     handleDragLeave(e) {
-        const targetItem = e.target.closest('.todo-item');
-        if (targetItem) {
-            targetItem.classList.remove('drag-over');
+        const item = e.target.closest('.todo-item');
+        if (item) {
+            item.classList.remove('drag-over');
         }
     }
 
-    handleDrop(e) {
+    handleDrop(e, targetIndex) {
         if (!this.isDragging) return;
 
         e.preventDefault();
 
-        const targetItem = e.target.closest('.todo-item');
-        if (targetItem && targetItem !== this.draggedElement) {
-            const targetIndex = parseInt(targetItem.dataset.index);
+        if (targetIndex !== this.draggedIndex) {
             this.reorderTodos(this.draggedIndex, targetIndex);
         }
 
-        this.cleanupDrag();
+        console.log(`Dropped at index ${targetIndex} from ${this.draggedIndex}`);
     }
 
-    handleTouchStart(e) {
-        const target = e.target;
-        if (target.closest('.delete-btn') || target.closest('.unchecked-icon') || target.closest('.checked-icon')) {
-            return;
+    showPlaceholder(targetItem, clientY) {
+        this.removePlaceholder();
+
+        if (!this.placeholder) {
+            this.placeholder = document.createElement('div');
+            this.placeholder.className = 'drag-placeholder';
         }
 
-        this.touchStartY = e.touches[0].clientY;
-        this.draggedElement = e.target.closest('.todo-item');
-        this.draggedIndex = parseInt(this.draggedElement.dataset.index);
-
-        this.touchStartTimeout = setTimeout(() => {
-            this.startTouchDrag(e);
-        }, 150);
-    }
-
-    startTouchDrag(e) {
-        this.isDragging = true;
-        this.draggedElement.classList.add('dragging');
-
-        document.body.style.overflow = 'hidden';
-
-        this.dispatchDragEvent('dragStarted', { index: this.draggedIndex });
-    }
-
-    handleTouchMove(e) {
-        if (this.touchStartTimeout) {
-            clearTimeout(this.touchStartTimeout);
-            this.touchStartTimeout = null;
-        }
-
-        if (!this.isDragging) {
-            const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
-            if (deltaY > 10) {
-                this.startTouchDrag(e);
-            }
-            return;
-        }
-
-        e.preventDefault();
-
-        this.touchCurrentY = e.touches[0].clientY;
-
-        const elementBelow = document.elementFromPoint(
-            e.touches[0].clientX,
-            e.touches[0].clientY
-        );
-
-        const targetItem = elementBelow?.closest('.todo-item');
-        if (targetItem && targetItem !== this.draggedElement) {
-            this.showPlaceholder(targetItem, this.touchCurrentY);
-        }
-    }
-
-    handleTouchEnd(e) {
-        if (this.touchStartTimeout) {
-            clearTimeout(this.touchStartTimeout);
-            this.touchStartTimeout = null;
-        }
-
-        if (!this.isDragging) return;
-
-        const elementBelow = document.elementFromPoint(
-            e.changedTouches[0].clientX,
-            e.changedTouches[0].clientY
-        );
-
-        const targetItem = elementBelow?.closest('.todo-item');
-        if (targetItem && targetItem !== this.draggedElement) {
-            const targetIndex = parseInt(targetItem.dataset.index);
-            this.reorderTodos(this.draggedIndex, targetIndex);
-        }
-
-        this.cleanupDrag();
-
-        document.body.style.overflow = '';
-    }
-
-    showPlaceholder(targetItem, yPosition) {
         const rect = targetItem.getBoundingClientRect();
-        const midpoint = rect.top + rect.height / 2;
+        const middle = rect.top + rect.height / 2;
 
-        if (this.placeholder.parentNode) {
-            this.placeholder.parentNode.removeChild(this.placeholder);
-        }
-
-        if (yPosition < midpoint) {
+        if (clientY < middle) {
             targetItem.parentNode.insertBefore(this.placeholder, targetItem);
         } else {
             targetItem.parentNode.insertBefore(this.placeholder, targetItem.nextSibling);
         }
     }
 
-    reorderTodos(fromIndex, toIndex) {
-        if (fromIndex === toIndex) return;
-
-        if (window.todos && Array.isArray(window.todos)) {
-            const item = window.todos.splice(fromIndex, 1)[0];
-            window.todos.splice(toIndex, 0, item);
-
-            if (typeof window.renderTodos === 'function') {
-                window.renderTodos();
-            }
-
-            this.saveTodosToStorage();
-
-            this.dispatchDragEvent('todosReordered', {
-                fromIndex,
-                toIndex,
-                item
-            });
-        }
-    }
-
-    saveTodosToStorage() {
-        try {
-            if (window.todos) {
-                localStorage.setItem('todos', JSON.stringify(window.todos));
-            }
-        } catch (error) {
-            console.warn('Could not save todos to localStorage:', error);
-        }
-    }
-
-    cleanupDrag() {
-        this.isDragging = false;
-
-        if (this.draggedElement) {
-            this.draggedElement.classList.remove('dragging');
-        }
-
+    removePlaceholder() {
         if (this.placeholder && this.placeholder.parentNode) {
             this.placeholder.parentNode.removeChild(this.placeholder);
         }
-
-        document.querySelectorAll('.drag-over').forEach(item => {
-            item.classList.remove('drag-over');
-        });
-
-        this.draggedElement = null;
-        this.draggedIndex = null;
-
-        document.body.style.overflow = '';
-
-        this.dispatchDragEvent('dragEnded');
     }
 
-    createDragImage(e) {
-        const dragImage = this.draggedElement.cloneNode(true);
-        dragImage.style.transform = 'rotate(5deg)';
-        dragImage.style.opacity = '0.8';
+    reorderTodos(fromIndex, toIndex) {
+        if (!window.todos || fromIndex === toIndex) return;
 
-        document.body.appendChild(dragImage);
+        console.log(`Reordering: moving item from ${fromIndex} to ${toIndex}`);
 
-        e.dataTransfer.setDragImage(dragImage, e.offsetX, e.offsetY);
+        // Get the actual todos array (might be filtered)
+        let workingTodos = [...window.todos];
 
-        setTimeout(() => {
-            if (dragImage.parentNode) {
-                dragImage.parentNode.removeChild(dragImage);
+        // Handle filtering - we need to map filtered indices back to original indices
+        if (window.currentFilter && window.currentFilter !== 'all') {
+            if (window.currentFilter === 'active') {
+                workingTodos = window.todos.filter(t => !t.completed);
+            } else if (window.currentFilter === 'completed') {
+                workingTodos = window.todos.filter(t => t.completed);
             }
-        }, 0);
-    }
 
-    dispatchDragEvent(eventName, detail = {}) {
-        const event = new CustomEvent(eventName, {
-            detail: detail,
-            bubbles: true
-        });
-        document.dispatchEvent(event);
-    }
+            // Find the actual indices in the main todos array
+            const fromTodo = workingTodos[fromIndex];
+            const toTodo = workingTodos[toIndex];
 
-    enable() {
-        this.attachDragHandlers();
-    }
+            const actualFromIndex = window.todos.findIndex(t => t.id === fromTodo.id);
+            const actualToIndex = window.todos.findIndex(t => t.id === toTodo.id);
 
-    disable() {
-        const todoItems = document.querySelectorAll('.todo-item');
-        todoItems.forEach(item => {
-            item.draggable = false;
-            this.removeDragHandlers(item);
-        });
-    }
+            // Reorder in the main array
+            const [movedItem] = window.todos.splice(actualFromIndex, 1);
+            window.todos.splice(actualToIndex, 0, movedItem);
+        } else {
+            // Simple reorder for 'all' filter
+            const [movedItem] = window.todos.splice(fromIndex, 1);
+            window.todos.splice(toIndex, 0, movedItem);
+        }
 
-    updateHandlers() {
-        this.attachDragHandlers();
+        // Save and re-render
+        if (window.saveTodos) {
+            window.saveTodos();
+        }
+
+        if (window.renderTodos) {
+            window.renderTodos();
+        }
+
+        console.log('Todos reordered successfully');
     }
 }
 
-window.todoDragDrop = new TodoDragDrop();
-
-window.TodoDragDropUtils = {
-    enable: () => window.todoDragDrop?.enable(),
-    disable: () => window.todoDragDrop?.disable(),
-    updateHandlers: () => window.todoDragDrop?.updateHandlers(),
-
-    onDragStart: (callback) => {
-        document.addEventListener('dragStarted', (e) => callback(e.detail));
-    },
-
-    onDragEnd: (callback) => {
-        document.addEventListener('dragEnded', (e) => callback(e.detail));
-    },
-
-    onReorder: (callback) => {
-        document.addEventListener('todosReordered', (e) => callback(e.detail));
-    }
-};
-
-document.addEventListener('DOMContentLoaded', function () {
-    const originalRenderTodos = window.renderTodos;
-
-    if (originalRenderTodos) {
-        window.renderTodos = function () {
-            originalRenderTodos.apply(this, arguments);
-
-            setTimeout(() => {
-                window.todoDragDrop?.updateHandlers();
-
-                document.dispatchEvent(new CustomEvent('todosUpdated'));
-            }, 0);
-        };
-    }
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.simpleDragDrop = new SimpleDragDrop();
+    console.log('Simple Drag & Drop initialized');
 });
 
-console.log('Todo Drag & Drop initialized');
-console.log('Touch and desktop drag support enabled');
+// Also initialize immediately if DOM is already ready
+if (document.readyState !== 'loading') {
+    window.simpleDragDrop = new SimpleDragDrop();
+    console.log('Simple Drag & Drop initialized (immediate)');
+}
