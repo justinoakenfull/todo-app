@@ -4,9 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- displays site properly based on user's device -->
 
   <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 
   <title>Frontend Mentor | Todo app</title>
@@ -15,41 +17,56 @@
 
 <body class="header-background">
 
-  <!--Center column-->
   <div class="center-column">
 
-    <!-- Header with title and dark mode toggle -->
     <div class="title-row">
       <h1 class="title align-left">Todo</h1>
-      <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+      <button class="dark-mode-toggle">
         <img src="./images/icon-sun.svg" alt="Dark Mode Toggle" class="dark-mode-icon">
       </button>
     </div>
-    <!-- Input field for adding new todos -->
+
     <div class="input-row">
-      <span alt="Unchecked Icon" class="unchecked-icon"></span>
-      <span alt="Check Icon" class="checked-icon">
-        <img src="./images/icon-check.svg" alt="Check Icon" class="check-icon">
-      </span>
-      <input type="text" placeholder="Create a new todo..." class="todo-input">
+      <button class="unchecked-icon" onclick="addTodo()"></button>
+      <input type="text" placeholder="Create a new todo..." class="todo-input" id="todoInput"
+        onkeypress="handleKeyPress(event)">
     </div>
+
+    <div class="todo-container">
+      <div class="todo-list" id="todoList">
+      </div>
+
+      <div class="todo-footer">
+        <span class="items-left"><span id="itemsCount">0</span> items left</span>
+
+        <div class="filter-controls">
+          <button class="filter-btn active" onclick="filterTodos('all')">All</button>
+          <button class="filter-btn" onclick="filterTodos('active')">Active</button>
+          <button class="filter-btn" onclick="filterTodos('completed')">Completed</button>
+        </div>
+
+        <button class="clear-completed" onclick="clearCompleted()">Clear Completed</button>
+      </div>
+    </div>
+
+    <div class="mobile-filter-controls">
+      <button class="filter-btn active" onclick="filterTodos('all')">All</button>
+      <button class="filter-btn" onclick="filterTodos('active')">Active</button>
+      <button class="filter-btn" onclick="filterTodos('completed')">Completed</button>
+    </div>
+
+    <p class="drag-hint">Drag and drop to reorder list</p>
   </div>
-
-
-  <!-- Add dynamic number --> items left
-
-  All
-  Active
-  Completed
-
-  Clear Completed
-
-  Drag and drop to reorder list
 
   <div class="attribution">
     Challenge by <a href="https://www.frontendmentor.io?ref=challenge" target="_blank">Frontend Mentor</a>.
-    Coded by <a href="#">Your Name Here</a>.
+    Coded by <a href="#">Justin Oakenfull</a>.
   </div>
+
+  <script src="./theme.js"></script>
+  <script src="./todo.js"></script>
+  <script src="./drag-drop.js"></script>
+
 </body>
 
 </html>
